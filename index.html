@@ -75,6 +75,17 @@
     </select>
     </div>
     <div>
+    <label>Fonte (source) — opcional</label>
+    <input id="source" placeholder='ex.: SFN (prefixo) ou valor exato'/>
+  </div>
+  <div>
+    <label>Tipo do filtro</label>
+    <select id="matchType">
+      <option value="prefix" selected>Começa com (prefixo)</option>
+      <option value="exact">Igualdade exata</option>
+    </select>
+  </div>
+    <div>
       <label>&nbsp;</label>
       <button id="btnStart">Carregar e iniciar</button>
     </div>
@@ -137,26 +148,37 @@ const firebaseConfig = {
 
 async function fetchQuestions(subject, qty){
   $("status").textContent = "Buscando questões…";
-
-  // pega um pool maior para poder embaralhar e recortar
-  // mínimo 120, dobro da quantidade pedida, teto 500
   const cap = Math.min(Math.max(qty * 2, 120), 500);
 
-  const snap = await db.collection("questions")
-    .where("subject","==", subject)
-    .limit(cap) // se quiser as mais novas, dá pra usar orderBy("createdAt","desc"), mas pode pedir índice
-    .get();
+  const src = (document.getElementById("source")?.value || "").trim();
+  const match = (document.getElementById("matchType")?.value || "prefix");
 
-  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  if (all.length === 0) throw new Error("Nenhuma questão encontrada para o subject escolhido.");
+  let qref = db.collection("questions").where("subject","==", subject);
 
-  if (all.length < qty) {
-    $("status").textContent = `Aviso: só há ${all.length} questões disponíveis para "${subject}".`;
+  if (src) {
+    if (match === "exact") {
+      // igualdade exata
+      qref = qref.where("source","==", src);
+    } else {
+      // prefixo: orderBy + startAt/endAt (pode pedir índice composto)
+      qref = qref.orderBy("source").startAt(src).endAt(src + "\uf8ff");
+    }
   }
 
+  const snap = await qref.limit(cap).get();
+  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  if (all.length === 0) throw new Error("Nenhuma questão encontrada com esse filtro.");
+
+  if (all.length < qty) {
+    $("status").textContent = `Aviso: só há ${all.length} questões disponíveis para esse filtro.`;
+  }
+
+  // Embaralha fortemente e recorta
   const picked = all.length <= qty ? all : shuffle(all).slice(0, qty);
-  return picked;
+  return shuffle(picked); // garante ordem aleatória de apresentação
 }
+
 
 
   function renderQuestion(){
@@ -277,4 +299,5 @@ async function fetchQuestions(subject, qty){
 </script>
 </body>
 </html>
+
 
