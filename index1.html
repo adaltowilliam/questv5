@@ -153,19 +153,13 @@ async function fetchQuestions(subject, qty){
   $("status").textContent = "Buscando questões…";
   const cap = Math.min(Math.max(qty * 2, 120), 500);
 
-  const src = (document.getElementById("source")?.value || "").trim();
-  const match = (document.getElementById("matchType")?.value || "prefix");
+  // pega o valor do select
+  const selectedSource = (document.getElementById("sourceSelect")?.value || "").trim();
 
   let qref = db.collection("questions").where("subject","==", subject);
-
-  if (src) {
-    if (match === "exact") {
-      // igualdade exata
-      qref = qref.where("source","==", src);
-    } else {
-      // prefixo: orderBy + startAt/endAt (pode pedir índice composto)
-      qref = qref.orderBy("source").startAt(src).endAt(src + "\uf8ff");
-    }
+  if (selectedSource) {
+    // igualdade exata (mais simples e rápido)
+    qref = qref.where("source","==", selectedSource);
   }
 
   const snap = await qref.limit(cap).get();
@@ -177,10 +171,11 @@ async function fetchQuestions(subject, qty){
     $("status").textContent = `Aviso: só há ${all.length} questões disponíveis para esse filtro.`;
   }
 
-  // Embaralha fortemente e recorta
+  // embaralha e recorta
   const picked = all.length <= qty ? all : shuffle(all).slice(0, qty);
-  return shuffle(picked); // garante ordem aleatória de apresentação
+  return shuffle(picked); // garante ordem aleatória na apresentação
 }
+
 
 
 
@@ -350,6 +345,7 @@ auth.onAuthStateChanged(u => {
 </script>
 </body>
 </html>
+
 
 
 
