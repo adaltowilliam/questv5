@@ -75,9 +75,12 @@
     </select>
     </div>
     <div>
-    <label>Fonte (source) — opcional</label>
-    <input id="source" placeholder='ex.: SFN (prefixo) ou valor exato'/>
-  </div>
+      <label>Fonte (source)</label>
+      <select id="sourceSelect">
+        <option value="">— Todas —</option>
+      </select>
+    </div>
+
   <div>
     <label>Tipo do filtro</label>
     <select id="matchType">
@@ -296,8 +299,57 @@ async function fetchQuestions(subject, qty){
       $("btnNext").disabled = true;
     }
   };
+
+  // Carrega valores únicos de "source" e preenche o <select>
+async function loadSources() {
+  const sel = document.getElementById("sourceSelect");
+  if (!sel) return;
+  // placeholder enquanto carrega
+  sel.innerHTML = `<option value="">Carregando fontes…</option>`;
+
+  const seen = new Set();
+  const values = [];
+  const pageSize = 300; // paginação p/ não estourar
+  let last = null;
+
+  try {
+    while (true) {
+      let q = db.collection("questions").orderBy("source").limit(pageSize);
+      if (last) q = q.startAfter(last);
+      const snap = await q.get();
+      if (snap.empty) break;
+
+      snap.docs.forEach(doc => {
+        const s = doc.get("source");
+        if (s && typeof s === "string" && !seen.has(s)) {
+          seen.add(s);
+          values.push(s);
+        }
+      });
+
+      last = snap.docs[snap.docs.length - 1];
+      if (snap.size < pageSize) break;
+    }
+
+    values.sort((a,b)=> a.localeCompare(b, "pt-BR"));
+    sel.innerHTML = `<option value="">— Todas —</option>` + values.map(v => `<option value="${v}">${v}</option>`).join("");
+  } catch (e) {
+    // se der algum erro, cai pro básico
+    sel.innerHTML = `<option value="">— Todas —</option>`;
+    document.getElementById("status").textContent = "Aviso: não consegui listar as fontes (source).";
+    console.error(e);
+  }
+}
+
+// Chame após autenticar com sucesso:
+auth.onAuthStateChanged(u => {
+  authState.textContent = u ? "Conectado (anônimo)" : "Desconectado";
+  if (u) loadSources(); // <<< aqui
+});
+
 </script>
 </body>
 </html>
+
 
 
