@@ -63,9 +63,16 @@
     </div>
     <div>
       <label>Quantas questões?</label>
-      <select id="qty">
-        <option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option>
-      </select>
+    <select id="qty">
+      <option>5</option>
+      <option selected>10</option>
+      <option>15</option>
+      <option>20</option>
+      <option>30</option>
+      <option>50</option>
+      <option>70</option>
+      <option>100</option>
+    </select>
     </div>
     <div>
       <label>&nbsp;</label>
@@ -128,20 +135,29 @@ const firebaseConfig = {
   let HITS = 0;
   let LOCKED = false;
 
-  async function fetchQuestions(subject, qty){
-    $("status").textContent = "Buscando questões…";
-    // Estratégia: traz até 100 aleatórias (client-side) do subject, depois recorta 'qty'
-    // Se quiser tudo, aumente o limit.
-    const snap = await db.collection("questions")
-      .where("subject","==", subject)
-      .limit(100) // ajuste se precisar
-      .get();
+async function fetchQuestions(subject, qty){
+  $("status").textContent = "Buscando questões…";
 
-    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if(all.length === 0) throw new Error("Nenhuma questão encontrada para o subject escolhido.");
-    const picked = shuffle(all).slice(0, qty);
-    return picked;
+  // pega um pool maior para poder embaralhar e recortar
+  // mínimo 120, dobro da quantidade pedida, teto 500
+  const cap = Math.min(Math.max(qty * 2, 120), 500);
+
+  const snap = await db.collection("questions")
+    .where("subject","==", subject)
+    .limit(cap) // se quiser as mais novas, dá pra usar orderBy("createdAt","desc"), mas pode pedir índice
+    .get();
+
+  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (all.length === 0) throw new Error("Nenhuma questão encontrada para o subject escolhido.");
+
+  if (all.length < qty) {
+    $("status").textContent = `Aviso: só há ${all.length} questões disponíveis para "${subject}".`;
   }
+
+  const picked = all.length <= qty ? all : shuffle(all).slice(0, qty);
+  return picked;
+}
+
 
   function renderQuestion(){
     const total = QUESTIONS.length;
@@ -261,3 +277,4 @@ const firebaseConfig = {
 </script>
 </body>
 </html>
+
