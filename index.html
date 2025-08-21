@@ -1,721 +1,551 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/Treinov5/icons/icon-180.png">
+  <link rel="manifest" href="/Treinov5/manifest.json">
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quiz Interativo do PDF</title>
+  <title>Periodização Ondulatória — Treino 6x/semana</title>
   <style>
-    :root{
-      --bg:#0b0f17; --panel:#111827; --card:#0f172a; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e; --accent-2:#f97316; --error:#ef4444;
-      --radius:18px;
-    }
+    :root{ --bg:#0f1115; --panel:#151923; --muted:#a6adbb; --text:#e8ecf1; --accent:#6ee7ff; --accent2:#a78bfa; --card:#1b2230; --border:#273043; --yellow:#facc15; }
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0b0f17,#0a1324);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
-    .wrap{max-width:980px;margin:24px auto;padding:20px}
-    .topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid rgba(255,255,255,.06);padding:14px 16px;border-radius:var(--radius);position:sticky;top:10px;z-index:9;backdrop-filter:blur(6px)}
-    .left{display:flex;gap:12px;align-items:center}
-    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .title{font-weight:700;letter-spacing:.2px}
-    .btn{appearance:none;border:1px solid rgba(255,255,255,.12);background:#0b1220;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px}
-    .btn:hover{border-color:rgba(255,255,255,.25)}
-    .btn.primary{background:linear-gradient(180deg,#1f9d67,#16824f);border:none}
-    .btn.ghost{background:transparent;border-color:rgba(255,255,255,.18)}
-    .btn.warn{background:linear-gradient(180deg,#f59e0b,#b45309);border:none}
-    .btn.danger{background:linear-gradient(180deg,#ef4444,#b91c1c);border:none}
-    .badge{font-size:12px;color:#d1d5db;background:#1f2937;border-radius:999px;padding:6px 10px;border:1px solid rgba(255,255,255,.06)}
-    .progress{height:10px;background:#0b1220;border:1px solid rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#10b981 40%,#84cc16);transition:width .3s ease}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:5}
+    h1{font-size:18px;margin:0}
+    .sub{font-size:12px;color:var(--muted)}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px}
+    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;overflow:hidden}
+    .day{grid-column:span 4;display:flex;flex-direction:column;min-width:300px}
+    .rest{border:1px dashed var(--border);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;min-height:160px}
+    .title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+    .pill.accent{border-color:var(--accent);color:var(--accent)}
+    .pill.treg{border-color:var(--yellow);color:var(--yellow)}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    th,td{border-bottom:1px solid var(--border);padding:6px 4px;text-align:left;vertical-align:top}
+    th{font-size:12px;color:var(--muted);font-weight:600}
+    input, textarea{font:15px/1.3 system-ui,Segoe UI,Roboto,Helvetica,Arial; font-variant-numeric: tabular-nums;}
+    td input, td textarea{width:100%;background:#0d1117;border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px}
+    td:nth-child(2) input, td:nth-child(3) input, td:nth-child(4) input { font-size:16px; font-weight:700; text-align:center; }
+    td textarea.namefield{min-height:48px;line-height:1.25;resize:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
+    input[type=number]{padding-right:6px;appearance:textfield}
+    input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+    input[type=number]{ -moz-appearance:textfield; }
+    .hint{color:var(--muted);font-size:12px;margin-top:6px}
+    .rowlabel{grid-column:1/-1;color:var(--muted);font-size:12px;margin:6px 2px}
+    .small{font-size:11px;color:var(--muted)}
+    .empty{padding:10px;border:1px dashed var(--border);border-radius:10px;color:var(--muted);text-align:center}
+    .src-badge{font-size:11px;color:var(--muted)}
+    /* gráficos */
+    .charts{margin-top:18px}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+    .chart-title{font-size:13px;color:var(--muted);margin:0 0 8px}
+    .chart-wrap{height:420px}
+    @media (max-width:980px){ .day{grid-column:span 12;min-width:auto} }
 
-    .card{margin-top:16px;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);overflow:hidden}
-    .card .hd{padding:18px 18px 8px 18px;border-bottom:1px dashed rgba(255,255,255,.08)}
-    .card .bd{padding:18px}
-    
-    .management-panel {
+    /* Botões Exportar e Importar JSON */
+    button, .btn-link {
+      background-color: var(--accent);
+      border: none; color: white;
+      padding: 10px 18px; font-size: 16px;
+      border-radius: 8px; cursor: pointer;
+      margin-left: 6px; transition: background-color .3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button:hover, .btn-link:hover{ background-color: var(--accent2); }
+    select{
+      padding: 6px; border-radius: 6px; border: 1px solid var(--border);
+      background-color: var(--card); color: var(--text); margin-left: 4px;
+    }
+
+    /* Tela inicial */
+    #start-screen {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        margin-top: 16px;
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: var(--radius);
-        padding: 18px;
-    }
-    .management-panel h3 {
-        margin: 0 0 12px 0;
-        border-bottom: 1px dashed rgba(255,255,255,.08);
-        padding-bottom: 8px;
-    }
-    .management-panel .section {
-        display: flex;
-        gap: 10px;
         align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 80vh;
+        gap: 20px;
+    }
+    #start-screen h1 { font-size: 28px; margin-bottom: 0; }
+    #start-screen p { color: var(--muted); margin-top: 5px; }
+    #start-screen .buttons {
+        display: flex;
         flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
     }
+    .hidden { display: none !important; }
 
-    .q-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .q-title{font-weight:700;font-size:18px;line-height:1.3;white-space: pre-wrap;}
-    /* AQUI: REMOVIDO .q-text { white-space: pre-wrap; } QUE NÃO ESTAVA SENDO USADO */
-    .q-list { margin-top: 12px; padding-left: 20px; }
-    .q-list li { margin-bottom: 8px; }
-
-    .opts{display:grid;gap:10px;margin-top:16px}
-    .opt{border:1px solid rgba(255,255,255,.10);padding:14px 16px;border-radius:14px;display:flex;gap:12px;align-items:flex-start;background:#0b1220;cursor:pointer;transition:border-color .2s ease, background .2s ease}
-    .opt input{margin-top:4px}
-    .opt:hover{border-color:rgba(255,255,255,.25)}
-    .opt.correct{border-color:var(--accent);background:rgba(34,197,94,.08)}
-    .opt.wrong{border-color:var(--error);background:rgba(239,68,68,.08)}
-    .opt.disabled{opacity:.75;cursor:not-allowed}
-
-    .feedback{margin-top:12px;padding:14px;border:1px solid rgba(255,255,255,.10);border-left-width:6px;border-radius:12px;background:#0b1220}
-    .feedback.ok{border-left-color:var(--accent)}
-    .feedback.bad{border-left-color:var(--error)}
-    .feedback h4{margin:0 0 6px 0}
-    .feedback .small{line-height:1.4;margin-top:8px}
-
-    .footer{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:16px}
-    .hint{color:var(--muted);font-size:13px}
-
-    .summary{display:grid;gap:14px}
-    .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .stat{background:#0b1220;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:14px;text-align:center}
-    .list{display:grid;gap:14px}
-    .rev-card{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;background:#0b1220}
-    .small{font-size:13px;color:var(--muted)}
-
-    .hidden{display:none}
-    .spacer{height:6px}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0b1220;border:1px solid rgba(255,255,255,.15);padding:2px 6px;border-radius:6px;font-size:12px}
-    .file{display:none}
-    .toggle{display:flex;gap:8px;align-items:center}
-    
-    select, input[type=text], input[type=number] {
-      background: #0b1220;
-      border: 1px solid rgba(255, 255, 255, .12);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      font-family: inherit;
-      min-width: 120px;
-    }
+    /* Total da sessão + barra */
+    .totals{display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:8px}
+    .bar{height:8px;background:#0d1117;border:1px solid var(--border);border-radius:999px;overflow:hidden;margin-top:6px}
+    .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="left">
-        <div class="title">📘 Quiz do PDF</div>
-        <span class="badge" id="quizId">—</span>
-        <span class="badge" id="qCount">0 questões</span>
-      </div>
-      <div class="right">
-        <button id="btnRestart" class="btn danger">Reiniciar</button>
-      </div>
+  <div id="start-screen">
+    <h1>Bem-vindo(a) ao seu Planejador de Treino</h1>
+    <p>Escolha uma das opções para começar:</p>
+    <div class="buttons">
+      <button id="btn-google-login">Entrar com Google</button>
+      <button id="btn-anon-login">Entrar como Visitante</button>
     </div>
-
-    <div class="management-panel">
-        <h3>Começar a estudar</h3>
-        <div class="section">
-            <select id="selectMateria">
-                <option value="">Matéria</option>
-            </select>
-            <select id="selectDisciplina" disabled>
-                <option value="">Disciplina</option>
-            </select>
-            <input type="number" id="qLimit" value="10" min="1" max="1000" style="width:70px">
-            <button id="btnLoadFromDB" class="btn primary">Carregar</button>
-        </div>
-        <h3 style="margin-top:24px;">Adicionar Questões</h3>
-        <div class="section">
-            <input type="text" id="materia_name" placeholder="Nome da Matéria">
-            <input type="text" id="disciplina_name" placeholder="Nome da Disciplina">
-            <label class="btn ghost" for="file">Carregar JSON</label>
-            <input id="file" type="file" accept=".json,application/json" class="file" />
-            <button id="btnSave" class="btn primary">Salvar Quiz</button>
-        </div>
-    </div>
-
-    <div class="card">
-      <div class="hd">
-        <div class="q-meta">
-          <div id="progressText" class="badge">—</div>
-          <div id="scoreText" class="badge">Acertos 0 • Erros 0</div>
-        </div>
-        <div class="spacer"></div>
-        <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
-      </div>
-      <div class="bd" id="stage">
-        </div>
-    </div>
-
-    <div class="card" id="howto">
-      <div class="hd"><strong>Como usar (rápido):</strong></div>
-      <div class="bd">
-        <ol>
-          <li>Para **estudar**, escolha a Matéria, a Disciplina e a quantidade de questões acima e clique em 'Carregar'.</li>
-          <li>Para **adicionar**, insira o nome da Matéria, Disciplina e carregue o arquivo JSON para salvar no banco de dados.</li>
-        </ol>
-        <p class="small">Dica: o estado fica salvo por <span class="kbd">localStorage</span>. Se você trocar o banco de questões, o sistema detecta e começa tudo do zero automaticamente.</p>
-      </div>
-    </div>
-
   </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-/*
-====================================================================
-💾 FORMATO DO JSON ESPERADO (exemplo mínimo)
-Você pode usar um array direto ou um objeto { questions: [...] }.
-Cada questão:
-{
-  "id": "61",
-  "enunciado": "Texto completo do enunciado...",
-  "alternativas": [
-    {"letra":"A","texto":"..."},
-    {"letra":"B","texto":"..."},
-    {"letra":"C","texto":"..."},
-    {"letra":"D":"..."}
-    {"letra":"E":"..."}
-  ],
-  "correta": "B",
-  "parecer": {
-    "geral": "(opcional) Meu parecer resumido da questão.",
-    "A": "Por que a A está errada.",
-    "B": "Por que a B é a correta.",
-    "C": "...",
-    "D": "...",
-    "E": "..."
-  }
-}
-====================================================================
-*/
-
-// --- Configuração do Firebase e Firestore ---
-const firebaseConfig = {
-    apiKey: "AIzaSyDykOJ5SRf1rqO7EeUPiIQRzTU8G_NLUZg",
-    authDomain: "questv5.firebaseapp.com",
-    projectId: "questv5",
-    storageBucket: "questv5.firebasestorage.app",
-    messagingSenderId: "537224931706",
-    appId: "1:537224931706:web:8e32d9794fbe17c7858ec3",
-    measurementId: "G-WD22G14TFB"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// --- Funções de Interação com o Firestore ---
-async function fetchSubjects() {
-    const materiasRef = db.collection("materias");
-    try {
-      const snapshot = await materiasRef.get();
-      const select = $('#selectMateria');
-      select.innerHTML = '<option value="">Matéria</option>';
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach(doc => {
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = doc.id;
-            select.appendChild(option);
-        });
-        select.disabled = false;
-      }
-    } catch (error) {
-      alert("Erro ao carregar matérias: " + error.message);
-    }
-}
-
-async function fetchDisciplines(materia) {
-    const disciplinasRef = db.collection("materias").doc(materia).collection("disciplinas");
-    try {
-      const snapshot = await disciplinasRef.get();
-      const select = $('#selectDisciplina');
-      select.innerHTML = '<option value="">Disciplina</option>';
-      if (!snapshot.empty) {
-          snapshot.forEach(doc => {
-              const option = document.createElement('option');
-              option.value = doc.id;
-              option.textContent = doc.id;
-              select.appendChild(option);
-          });
-          select.disabled = false;
-      } else {
-          select.disabled = true;
-      }
-    } catch (error) {
-      alert("Erro ao carregar disciplinas: " + error.message);
-    }
-}
-
-async function saveQuizToFirestore(materia, disciplina, questions) {
-    if (!materia || !disciplina || !questions || questions.length === 0) {
-        throw new Error("Matéria, disciplina ou questões não podem estar vazios.");
-    }
-    
-    await db.collection("materias").doc(materia).set({}, { merge: true });
-
-    const questionsRef = db.collection("materias")
-        .doc(materia)
-        .collection("disciplinas")
-        .doc(disciplina)
-        .collection("questoes");
-
-    const batch = db.batch();
-    questions.forEach(q => {
-        const newQuestionRef = questionsRef.doc(String(q.id));
-        batch.set(newQuestionRef, q);
-    });
-
-    await batch.commit();
-    return `Quiz "${disciplina}" salvo com sucesso na matéria "${materia}"!`;
-}
-
-async function loadQuizFromFirestore(materia, disciplina) {
-    if (!materia) {
-        throw new Error("Por favor, selecione uma Matéria.");
-    }
-
-    let allQuestions = [];
-
-    if (!disciplina) {
-        const disciplinasRef = db.collection("materias").doc(materia).collection("disciplinas");
-        const disciplinasSnapshot = await disciplinasRef.get();
-        if (disciplinasSnapshot.empty) {
-            throw new Error(`Nenhuma disciplina encontrada para a matéria "${materia}".`);
-        }
-
-        for (const doc of disciplinasSnapshot.docs) {
-            const questoesRef = doc.ref.collection("questoes");
-            const questoesSnapshot = await questoesRef.get();
-            questoesSnapshot.forEach(qDoc => {
-                allQuestions.push(qDoc.data());
-            });
-        }
-    } else {
-        const questionsRef = db.collection("materias")
-            .doc(materia)
-            .collection("disciplinas")
-            .doc(disciplina)
-            .collection("questoes");
-        
-        const snapshot = await questionsRef.get();
-        if (snapshot.empty) {
-            throw new Error(`Nenhuma questão encontrada para a disciplina "${disciplina}" na matéria "${materia}".`);
-        }
-        
-        snapshot.forEach(doc => {
-            allQuestions.push(doc.data());
-        });
-    }
-
-    if (allQuestions.length === 0) {
-        throw new Error("Nenhuma questão foi carregada.");
-    }
-
-    // Embaralha todas as questões antes de aplicar o limite
-    const shuffledQuestions = shuffle(allQuestions);
-    
-    // Aplica o limite de questões
-    const limit = parseInt(qLimit.value) || shuffledQuestions.length;
-    const limitedQuestions = shuffledQuestions.slice(0, limit);
-
-    QUIZ = {
-        meta: {
-            id: disciplina || materia,
-            title: `Quiz de ${disciplina || materia}`,
-            version: 1
-        },
-        questions: normalize(limitedQuestions)
-    };
-    
-    prepareOrder();
-    resetProgress();
-    syncHeader();
-    render();
-    return `Quiz de "${disciplina || materia}" carregado com sucesso.`;
-}
-
-// —— Estado global ——————————————————————————————————————
-let QUIZ = {
-  meta: { id: "DEMO-PDF", title: "DEMO", version: 1 },
-  questions: []
-};
-let ORDER = [];
-let IDX = 0;
-let ST = {
-  answers: {},
-  hits: 0,
-  misses: 0,
-  finished: false
-};
-
-// —— Utilidades ——————————————————————————————————————
-const $ = sel => document.querySelector(sel);
-const stage = $('#stage');
-const progressText = $('#progressText');
-const scoreText = $('#scoreText');
-const bar = $('#bar');
-const quizBadge = $('#quizId');
-const qCount = $('#qCount');
-const inputMateriaName = $('#materia_name');
-const inputDisciplinaName = $('#disciplina_name');
-const selectMateria = $('#selectMateria');
-const selectDisciplina = $('#selectDisciplina');
-const qLimit = $('#qLimit');
-
-function hash(str){
-  let h = 2166136261>>>0; for(let i=0;i<str.length;i++){h ^= str.charCodeAt(i); h = Math.imul(h, 16777619);} return (h>>>0).toString(36);
-}
-function save(){
-  const key = storageKey();
-  localStorage.setItem(key, JSON.stringify({ QUIZ, ORDER, IDX, ST }));
-}
-function load(key){
-  const raw = localStorage.getItem(key||storageKey());
-  if(!raw) return false;
-  try{ const obj = JSON.parse(raw); ({ QUIZ, ORDER, IDX, ST } = obj); return true; }catch(e){ return false; }
-}
-function storageKey(){
-  const payload = JSON.stringify(QUIZ.questions.map(q=>q.id+q.correta+q.enunciado.length));
-  return 'quizpdf:'+hash(payload);
-}
-function resetProgress(){
-  ST = { answers:{}, hits:0, misses:0, finished:false };
-  IDX = 0; save();
-}
-function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-
-// —— Carregamento de banco —————————————————————————————
-async function loadFromJSONFile(file){
-  const text = await file.text();
-  let data = JSON.parse(text);
-  if(Array.isArray(data)) data = { questions: data };
-  if(!Array.isArray(data.questions)) throw new Error('JSON inválido: não há "questions".');
-  QUIZ = { meta:{ id: file.name.replace(/\.[^.]+$/,''), title: file.name, version: 1 }, questions: normalize(data.questions) };
-  
-  prepareOrder();
-  resetProgress();
-  syncHeader();
-  render();
-}
-function normalize(arr){
-  return arr.map((q,i)=>({
-    id: q.id ?? String(i+1),
-    enunciado: q.enunciado?.trim() ?? '',
-    alternativas: (q.alternativas||[]).map((a,j)=>({
-      letra: a.letra ?? String.fromCharCode(65+j),
-      texto: (a.texto??'').trim()
-    })),
-    correta: (q.correta||'').toString().trim().toUpperCase(),
-    parecer: q.parecer || null
-  }));
-}
-function prepareOrder(){
-    const allIds = QUIZ.questions.map((_, i) => i);
-    ORDER = allIds;
-}
-
-// --- Funções de Análise de Erros ---
-function analyzeErrors(wrongQuestions) {
-  const errorThemes = {};
-  const keywords = {
-    'CMN': 'Conselho Monetário Nacional',
-    'Bacen': 'Banco Central do Brasil',
-    'CVM': 'Comissão de Valores Mobiliários',
-    'SFN': 'Sistema Financeiro Nacional',
-    'Política Monetária': 'Política Monetária',
-    'órgão normativo': 'Órgãos Normativos',
-    'órgão supervisor': 'Órgãos Supervisores',
-    'Mercado de Capitais': 'Mercado de Capitais',
-    'FGC': 'Fundo Garantidor de Créditos',
-    'Susep': 'Superintendência de Seguros Privados'
-  };
-
-  wrongQuestions.forEach(q => {
-    const textToAnalyze = (q.enunciado + ' ' + (q.parecer?.geral || '')).toLowerCase();
-    for (const key in keywords) {
-      if (textToAnalyze.includes(key.toLowerCase())) {
-        errorThemes[keywords[key]] = (errorThemes[keywords[key]] || 0) + 1;
-      }
-    }
-  });
-
-  const sortedThemes = Object.entries(errorThemes).sort(([, a], [, b]) => b - a);
-  return sortedThemes;
-}
-
-// —— UI principal ————————————————————————————————————
-function syncHeader(){
-  quizBadge.textContent = QUIZ.meta.id;
-  qCount.textContent = `${ORDER.length} questão${ORDER.length===1?'':'es'}`;
-}
-function render(){
-  if(!QUIZ.questions.length){
-    stage.innerHTML = `<p class="small">Nenhuma questão carregada ainda. Use a seção 'Começar a estudar' ou 'Adicionar Questões' acima.</p>`;
-    updateBar();
-    return;
-  }
-  if(ST.finished){
-    renderSummary();
-    return;
-  }
-  IDX = clamp(IDX,0,ORDER.length-1);
-  const q = QUIZ.questions[ ORDER[IDX] ];
-  const ans = ST.answers[q.id];
-  progressText.textContent = `Questão ${IDX+1} de ${ORDER.length}`;
-  scoreText.textContent = `Acertos ${ST.hits} • Erros ${ST.misses}`;
-  updateBar();
-
-  const opts = q.alternativas.map((a)=>{
-    const chosen = ans?.chosen === a.letra;
-    const classes = ['opt'];
-    if(ans){ classes.push(a.letra===q.correta?'correct':(chosen?'wrong':'')); }
-    return `
-      <label class="${classes.join(' ')}" data-letra="${a.letra}">
-        <input type="radio" name="opt" value="${a.letra}" ${chosen?'checked':''} ${ans?'disabled':''} />
-        <div><strong>${a.letra})</strong> ${escapeHTML(a.texto)}</div>
-      </label>`;
-  }).join('');
-  
-  // AQUI: removido a lógica de regex para quebra de linha que estava com problemas.
-  // O enunciado principal agora renderiza o texto diretamente com a nova propriedade CSS.
-  let mainEnunciado = q.enunciado;
-  
-  stage.innerHTML = `
-    <div class="q">
-      <div class="q-title">${mainEnunciado}</div>
-      <div class="opts" id="opts">${opts}</div>
-      <div id="feedback"></div>
-      <div class="footer">
-        <div class="hint">Use <span class="kbd">→</span> para próxima • <span class="kbd">←</span> para anterior</div>
-        <div class="footer-btns">
-          <button class="btn ghost" id="prev">◀ Anterior</button>
-          <button class="btn primary" id="next">Próxima ▶</button>
-          <button class="btn warn" id="finish">Finalizar</button>
-        </div>
-      </div>
-    </div>`;
-
-  $('#prev').onclick = ()=>{ IDX = Math.max(0, IDX-1); save(); render(); }
-  $('#next').onclick = ()=>{ IDX = Math.min(ORDER.length-1, IDX+1); save(); render(); }
-  $('#finish').onclick = ()=>{ ST.finished = true; save(); renderSummary(); }
-
-  $('#opts').onclick = (ev)=>{
-    const label = ev.target.closest('label.opt');
-    if(!label) return;
-    if(ST.answers[q.id]) return;
-    const letra = label.getAttribute('data-letra');
-    evaluate(q, letra);
-  }
-
-  if(ans){
-    showFeedback(q, ans.chosen);
-  }
-}
-
-function evaluate(q, letra){
-  const isCorrect = (letra === q.correta);
-  ST.answers[q.id] = { chosen: letra, correct: isCorrect };
-  if(isCorrect) ST.hits++; else ST.misses++;
-  save();
-  render();
-  showFeedback(q, letra);
-}
-
-function showFeedback(q, chosen){
-  const ok = chosen === q.correta;
-  const fb = $('#feedback');
-  const parecer = (q.parecer && (q.parecer[chosen] || q.parecer.geral)) || genericOpinion(q, chosen);
-  const parecerCorreta = (q.parecer && q.parecer[q.correta]) || 'Esta é a alternativa alinhada ao gabarito informado.';
-
-  fb.innerHTML = `
-    <div class="feedback ${ok?'ok':'bad'}">
-      <h4>${ok?'✅ Resposta correta!':'❌ Resposta errada.'}</h4>
-      <div class="small">Gabarito: <strong>${q.correta}</strong> • Sua resposta: <strong>${chosen}</strong></div>
-      <div style="margin-top:8px">${escapeHTML(parecer)}</div>
-      <details style="margin-top:10px"><summary>Ver análise alternativa por alternativa</summary>
-        <ul style="margin-top:8px">
-          ${q.alternativas.map(a=>`<li><strong>${a.letra})</strong> ${escapeHTML(a.texto)}<br><span class="small"><strong>Parecer de Gemini:</strong> ${escapeHTML((q.parecer && q.parecer[a.letra]) || (a.letra===q.correta?parecerCorreta:'Não é a melhor opção para o enunciado.'))}</span></li>`).join('')}
-        </ul>
-      </details>
-    </div>`;
-}
-
-function genericOpinion(q, chosen){
-  return chosen===q.correta
-    ? 'Boa! A alternativa escolhida atende ao núcleo do enunciado conforme os termos-chave apresentados.'
-    : 'A alternativa marcada não casa com o núcleo semântico do enunciado. Compare os termos-chave e a condição pedida com a alternativa correta.';
-}
-
-function updateBar(){
-  const total = ORDER.length || 1;
-  const current = Math.min(ORDER.length, Object.keys(ST.answers).length);
-  bar.style.width = ((current/total)*100).toFixed(1)+'%';
-}
-
-function renderSummary(){
-  const total = ORDER.length;
-  const pct = total? Math.round((ST.hits/total)*100) : 0;
-  progressText.textContent = `Resumo`;
-  scoreText.textContent = `Acertos ${ST.hits} • Erros ${ST.misses}`;
-  updateBar();
-
-  const wrong = ORDER.map(i=>QUIZ.questions[i]).filter(q=>ST.answers[q.id]?.correct === false);
-  const errorAnalysis = analyzeErrors(wrong);
-
-  stage.innerHTML = `
-    <div class="summary">
-      <div class="summary-grid">
-        <div class="stat"><div class="small">Acerto</div><div style="font-size:28px;font-weight:800">${pct}%</div></div>
-        <div class="stat"><div class="small">Acertos</div><div style="font-size:22px;font-weight:700">${ST.hits}/${total}</div></div>
-        <div class="stat"><div class="small">Erros</div><div style="font-size:22px;font-weight:700">${ST.misses}</div></div>
-      </div>
+  <div id="training-screen" class="hidden">
+    <header>
       <div>
-        <button class="btn primary" id="btnRever">Rever questões erradas</button>
-        <button class="btn ghost" id="btnVoltar">Voltar ao quiz</button>
+        <h1>Periodização Ondulatória — 12 semanas</h1>
+        <div class="sub">Workspace: <code id="ws-label"></code></div>
+        <div class="src-badge" id="src-badge"></div>
       </div>
-      <div id="review" class="list hidden"></div>
-    </div>`;
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label>Semana:
+          <select id="week" class="btn"></select>
+        </label>
+        <button id="exportBtn" class="btn">Exportar JSON</button>
+        <button id="importBtn" class="btn">Importar JSON</button>
+        <input type="file" id="fileInput" accept="application/json" style="display:none"/>
+      </div>
+    </header>
 
-  $('#btnVoltar').onclick = ()=>{ ST.finished=false; save(); render(); }
-  $('#btnRever').onclick = ()=>{
-    const list = $('#review');
-    const wrong = ORDER.map(i=>QUIZ.questions[i]).filter(q=>ST.answers[q.id]?.correct === false);
-    
-    let analysisHTML = '';
-    if (wrong.length > 0) {
-      const errorAnalysis = analyzeErrors(wrong);
-      analysisHTML = `
-        <div class="card" style="padding:18px; margin-bottom: 16px;">
-          <h4>🎯 Pontos de atenção</h4>
-          <p>Com base em suas questões erradas, você pode focar em:</p>
-          <ul>
-            ${errorAnalysis.map(([theme, count]) => `<li><strong>${theme}</strong> (${count} questões)</li>`).join('')}
-          </ul>
-          <p class="small">Esta é uma análise inteligente baseada nas palavras-chave mais frequentes nas questões que você errou.</p>
+    <div class="wrap">
+      <div class="rowlabel">Faixa alvo de repetições da semana: <b id="repRange">—</b></div>
+
+      <div class="row">
+        <section class="day card" id="d1"></section>
+        <section class="day card" id="d2"></section>
+        <section class="day card" id="d3"></section>
+        <section class="day card rest" id="dR">DESCANSO</section>
+        <section class="day card" id="d4"></section>
+        <section class="day card" id="d5"></section>
+        <section class="day card" id="d6"></section>
+      </div>
+
+      <section class="charts">
+        <h2 style="font-size:16px;margin:18px 0 8px">📈 Evolução do seu treino</h2>
+
+        <div class="chart-card">
+          <p class="chart-title">Evolução do Volume Semanal (12 semanas)</p>
+          <div class="chart-wrap"><canvas id="chartWeekly"></canvas></div>
         </div>
-      `;
+
+        <div class="chart-card" id="avgChartWrap">
+          <p class="chart-title">Média de repetições por exercício — Semana atual</p>
+          <div class="chart-wrap"><canvas id="chartAvgReps"></canvas></div>
+        </div>
+      </section>
+
+      <p class="hint" id="testStatus"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, onSnapshot,
+      getDocFromServer, getDocFromCache, enableIndexedDbPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // === Firebase config (o seu) ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyAN9B0dCAIfVPmGZ6qUUfC8k9KnrUT5ymI",
+      authDomain: "treino-ondulatoriov5.firebaseapp.com",
+      projectId: "treino-ondulatoriov5",
+      storageBucket: "treino-ondulatoriov5.firebasestorage.app",
+      messagingSenderId: "152908725685",
+      appId: "1:152908725685:web:ca42dc3714fe07af162dfc"
+    };
+
+    // Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    enableIndexedDbPersistence(db).catch(()=>{});
+
+    // ===== Metadados do ciclo =====
+    const weeks = [
+      {id:1,reps:"12–15",treg:false},{id:2,reps:"4–6",treg:false},{id:3,reps:"8–10",treg:false},{id:4,reps:"12–15",treg:false},
+      {id:5,reps:"12–15",treg:true},{id:6,reps:"4–6",treg:false},{id:7,reps:"8–10",treg:false},{id:8,reps:"12–15",treg:false},
+      {id:9,reps:"12–15",treg:true},{id:10,reps:"4–6",treg:false},{id:11,reps:"8–10",treg:false},{id:12,reps:"12–15",treg:false}
+    ];
+    const dayPlan=["TA","TB","TC","REST","TA","TB","TC"];
+    const activeDayIdx=[0,1,2,4,5,6];
+
+    // ===== Helpers =====
+    const $=(s,r=document)=>r.querySelector(s);
+    const el=(t,a={})=>Object.assign(document.createElement(t),a);
+    const key=(w,d)=>`treino:v17:ws:${currentUserId || 'default'}:week${w}:day${d}`;
+    const formatNum=n=>(Number(n)||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
+    const vol=o=>Math.round((Number(o.sets)||0)*(Number(o.reps)||0)*(Number(o.carga)||0)*100)/100;
+
+    // A referência do documento agora vai usar o ID do usuário
+    function dayDocRef(userId, weekId, dayIdx){
+      return doc(db, "users", userId, "weeks", String(weekId), "days", String(dayIdx));
     }
 
-    list.innerHTML = analysisHTML + (wrong.map(q=>{
-      const chosen = ST.answers[q.id]?.chosen;
-      const corr = q.correta;
-      const motivo = (q.parecer && q.parecer[chosen]) || 'Sua alternativa não responde exatamente ao que o enunciado exige.';
-      return `<div class="rev-card">
-        <div class="small">ID: ${q.id}</div>
-        <div style="font-weight:700;margin:6px 0">${escapeHTML(q.enunciado)}</div>
-        <ul style="margin:8px 0 12px 0">${q.alternativas.map(a=>`<li><strong>${a.letra})</strong> ${escapeHTML(a.texto)}</li>`).join('')}</ul>
-        <div>Você marcou: <strong>${chosen}</strong> • Gabarito: <strong>${corr}</strong></div>
-        <div class="small" style="margin-top:6px"><strong>Por que errou:</strong> ${escapeHTML(motivo)}</div>
-      </div>`;
-    }).join('') || '<p class="small">Nenhum erro 👏</p>');
-    list.classList.remove('hidden');
-  }
-}
+    // === Total da sessão + barra (helpers) ===
+    function sessionSum(arr){
+      return arr.reduce((a,o)=>a + Math.round((Number(o.sets)||0)*(Number(o.reps)||0)*(Number(o.carga)||0)*100)/100, 0);
+    }
+    function attachSessionFooter(container, weekIdx, dayIdx, data){
+      let totalsWrap = container.querySelector('.totals');
+      if(!totalsWrap){ totalsWrap = el('div',{className:'totals'}); container.append(totalsWrap); }
+      else { totalsWrap.innerHTML=''; }
 
-// —— Ações da topbar ————————————————————————————————————
-$('#file').addEventListener('change', (e)=>{
-  const f = e.target.files?.[0];
-  if(!f) return;
-  loadFromJSONFile(f).catch(err=>alert('Erro ao carregar JSON: '+err.message));
-});
-$('#btnRestart').onclick = ()=>{
-  if(confirm('Reiniciar progresso? Isso zera suas respostas salvas.')){
-    resetProgress(); render();
-  }
-};
-$('#btnSave').onclick = async () => {
-    const materia = inputMateriaName.value;
-    const disciplina = inputDisciplinaName.value;
-    if (!materia || !disciplina) {
-        alert("Por favor, preencha a Matéria e a Disciplina.");
-        return;
-    }
-    try {
-        const message = await saveQuizToFirestore(materia, disciplina, QUIZ.questions);
-        alert(message);
-        fetchSubjects();
-    } catch (error) {
-        alert("Erro ao salvar no Firestore: " + error.message);
-    }
-};
+      const totalLbl = el('div',{id:`total-${dayIdx}`,textContent:'Total da sessão: 0'});
+      totalsWrap.append(totalLbl);
 
-$('#btnLoadFromDB').onclick = async () => {
-    const materia = selectMateria.value;
-    const disciplina = selectDisciplina.value;
-    const limit = parseInt(qLimit.value);
-    
-    if (!materia) {
-        alert("Por favor, selecione uma Matéria.");
-        return;
-    }
-    try {
-        const message = await loadQuizFromFirestore(materia, disciplina, limit);
-        alert(message);
-    } catch (error) {
-        alert("Erro ao carregar do Firestore: " + error.message);
-    }
-};
+      let bar = container.querySelector('.bar');
+      if(!bar){ bar = el('div',{className:'bar'}); container.append(bar); }
+      bar.innerHTML=''; const barIn = el('i'); bar.append(barIn);
 
-selectMateria.onchange = (e) => {
-    const materia = e.target.value;
-    if (materia) {
-        fetchDisciplines(materia).catch(err => {
-            alert("Erro ao carregar disciplinas: " + err.message);
-            selectDisciplina.innerHTML = '<option value="">Disciplina</option>';
-            selectDisciplina.disabled = true;
+      function update(){
+        const sum = sessionSum(data);
+        totalLbl.textContent = 'Total da sessão: ' + formatNum(sum);
+        const actives = [0,1,2,4,5,6].map(i=>{
+          try{ const obj = JSON.parse(localStorage.getItem(key(weekIdx,i))||'null'); return sessionSum(obj?.items||[]); }
+          catch{ return 0; }
         });
-    } else {
-        selectDisciplina.innerHTML = '<option value="">Disciplina</option>';
-        selectDisciplina.disabled = true;
+        const max = Math.max(1, ...actives);
+        barIn.style.width = Math.min(100, (sum/max)*100) + '%';
+      }
+      update();
+      return { update };
     }
-};
 
-qLimit.onchange = (e) => {
-    const newLimit = parseInt(e.target.value);
-    if (!isNaN(newLimit) && newLimit > 0 && QUIZ.questions.length > 0) {
-        prepareOrder();
-        resetProgress();
-        render();
-    }
-}
-qLimit.onkeydown = (e) => {
-    if (e.key === 'Enter') {
-        const newLimit = parseInt(e.target.value);
-        if (!isNaN(newLimit) && newLimit > 0 && QUIZ.questions.length > 0) {
-            prepareOrder();
-            resetProgress();
-            render();
+    // ===== Leitura SEM seed =====
+    async function loadDay(userId, weekIdx, dayIdx){
+      if(dayPlan[dayIdx]==='REST') return null;
+      const k=key(weekIdx,dayIdx);
+
+      // 1) servidor
+      try{
+        const ref = dayDocRef(userId, weekIdx, dayIdx);
+        const snap = await getDocFromServer(ref);
+        if (snap.exists()){
+          const remote = snap.data(); // {items, updatedAt}
+          localStorage.setItem(k, JSON.stringify(remote));
+          $('#src-badge').textContent = `Fonte: Firestore (S${weekIdx}/D${dayIdx})`;
+          return remote.items || [];
         }
+      }catch(e){}
+
+      // 2) cache local
+      try{
+        const cached = JSON.parse(localStorage.getItem(k) || 'null');
+        if (cached && Array.isArray(cached.items)){
+          $('#src-badge').textContent = `Fonte: Cache local (S${weekIdx}/D${dayIdx})`;
+          return cached.items;
+        }
+      }catch(e){}
+
+      // 3) cache Firestore
+      try{
+        const ref = dayDocRef(userId, weekIdx, dayIdx);
+        const snap = await getDocFromCache(ref);
+        if (snap.exists()){
+          const c = snap.data();
+          localStorage.setItem(k, JSON.stringify(c));
+          $('#src-badge').textContent = `Fonte: Cache Firestore (S${weekIdx}/D${dayIdx})`;
+          return c.items || [];
+        }
+      }catch(e){}
+
+      $('#src-badge').textContent = `Fonte: (vazio)`;
+      return [];
     }
-}
 
+    async function saveDay(userId, weekIdx, dayIdx, items){
+      const payload = { items, updatedAt: Date.now() };
+      localStorage.setItem(key(weekIdx,dayIdx), JSON.stringify(payload));
+      await setDoc(dayDocRef(userId, weekIdx, dayIdx), payload, { merge: true });
+      updateCharts();
+    }
 
-// —— Navegação por teclado ————————————————————————————
-document.addEventListener('keydown', (e)=>{
-  if(ST.finished) return;
-  if(e.key==='ArrowRight'){ IDX=Math.min(ORDER.length-1,IDX+1); save(); render(); }
-  if(e.key==='ArrowLeft'){ IDX=Math.max(0,IDX-1); save(); render(); }
-});
+    // ===== Cálculos p/ gráficos =====
+    function getWeekVolume(weekId){
+      return activeDayIdx.reduce((acc,di)=>{
+        let obj=null; try{ obj=JSON.parse(localStorage.getItem(key(weekId,di))||'null'); }catch{}
+        const arr = obj?.items || [];
+        return acc + arr.reduce((a,o)=>a+vol(o),0);
+      },0);
+    }
+    function getAllWeeksVolumes(){ return weeks.map(w=>getWeekVolume(w.id)); }
 
-// —— Helpers ————————————————————————————————————————
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+    function getWeekExerciseAvgRepsRows(weekId){
+      const map = new Map();
+      activeDayIdx.forEach(di=>{
+        let obj=null; try{ obj=JSON.parse(localStorage.getItem(key(weekId,di))||'null'); }catch{}
+        const arr = obj?.items || [];
+        arr.forEach(o=>{
+          const name=o.nome || '—';
+          const entry=map.get(name)||{sumReps:0,count:0,sumVol:0};
+          entry.sumReps += Number(o.reps)||0;
+          entry.count   += 1;
+          entry.sumVol  += vol(o);
+          map.set(name,entry);
+        });
+      });
+      const rows=[...map.entries()].map(([nome,{sumReps,count,sumVol}])=>({ nome, avgReps: count? (sumReps/count):0, sumVol }));
+      rows.sort((a,b)=>b.sumVol-a.sumVol);
+      return rows;
+    }
+    function setAvgChartHeightByRows(count){
+      const h = Math.min(1600, Math.max(300, 28*count + 80));
+      document.getElementById('avgChartWrap').style.height = h + 'px';
+    }
 
-// —— Boot ————————————————————————————————————————————
-(function boot(){
-  const ok = load();
-  syncHeader();
-  if(!ok){
-    stage.innerHTML = `<p class="small">Nenhuma questão carregada ainda. Use a seção 'Começar a estudar' ou 'Adicionar Questões' acima.</p>`;
-  } else {
-    render();
-  }
-  updateBar();
-  fetchSubjects();
-})();
-</script>
+    // ===== Realtime =====
+    function attachRealtimeSync(userId){
+      weeks.forEach(w=>{
+        activeDayIdx.forEach(di=>{
+          const ref = dayDocRef(userId, w.id, di);
+          onSnapshot(ref, (snap)=>{
+            if(!snap.exists()) return;
+            const incoming = snap.data(); // {items, updatedAt}
+            const k = key(w.id, di);
+            let curr = null; try { curr = JSON.parse(localStorage.getItem(k) || "null"); } catch {}
+            const currTs = curr?.updatedAt || 0;
+            const inTs   = incoming?.updatedAt || 0;
+            if (inTs > currTs){
+              localStorage.setItem(k, JSON.stringify(incoming));
+              const wkSel = Number($('#week')?.value || 1);
+              if (wkSel === w.id){
+                const hostId = ['d1','d2','d3',null,'d4','d5','d6'][di];
+                if (hostId) buildTable($('#'+hostId), w.id, di);
+              }
+              updateCharts();
+            }
+          });
+        });
+      });
+    }
+
+    // ===== UI (tabelas) =====
+    const $weekSel = $('#week');
+    weeks.forEach(w=>$weekSel.append(el('option',{value:String(w.id),textContent:`Semana ${w.id}`})));
+    $weekSel.value='1';
+
+    let currentUserId = null; // Variável para armazenar o ID do usuário
+
+    async function buildTable(container,weekIdx,dayIdx){
+      const plan=dayPlan[dayIdx];
+      container.innerHTML='';
+
+      // título
+      const title=el('div',{className:'title'}), left=el('div'), right=el('div');
+      const h=el('h3'); h.style.margin='0'; h.textContent=`Dia ${dayIdx<3?dayIdx+1:dayIdx} · ${plan}`;
+      left.append(h);
+      const pill=el('span',{className:'pill accent',textContent:plan}); right.append(pill);
+      if(weeks[weekIdx-1].treg) right.append(' ', el('span',{className:'pill treg',textContent:'TREG'}));
+      title.append(left,right);
+      container.append(title);
+
+      if(plan==='REST'){
+        container.append(el('div',{className:'empty',textContent:'Descanso'}));
+        return;
+      }
+
+      // tabela
+      const tbl=el('table');
+      const colgroup=el('colgroup');
+      colgroup.innerHTML=`<col style="width:36%"><col style="width:10%"><col style="width:20%"><col style="width:22%"><col style="width:12%">`;
+      const thead=el('thead'); thead.innerHTML=`<tr><th>Exercício</th><th>Séries</th><th>Reps</th><th>Carga (kg)</th><th>Volume</th></tr>`;
+      const tbody=el('tbody');
+
+      let data = await loadDay(currentUserId, weekIdx, dayIdx); // array ou []
+      if (!data.length){
+        container.append(el('div',{className:'empty',textContent:'Sem dados no Firestore para este dia.'}));
+        return;
+      }
+
+      data.forEach((o)=>{
+        const tr=el('tr');
+
+        // nome
+        const td0=el('td');
+        const name=el('textarea',{className:'namefield',rows:2});
+        name.value=o.nome||'';
+        td0.append(name);
+
+        // sets
+        const td1=el('td');
+        const sets=el('input',{type:'number',step:'1',min:'0',value:o.sets??0});
+        td1.append(sets);
+
+        // reps
+        const td2=el('td');
+        const reps=el('input',{type:'number',step:'0.01',min:'0',value:o.reps??0});
+        td2.append(reps);
+
+        // carga
+        const td3=el('td');
+        const load=el('input',{type:'number',step:'0.01',min:'0',value:o.carga??0});
+        td3.append(load);
+
+        // volume
+        const td4=el('td');
+        const volSpan=el('span',{textContent: formatNum(vol(o))});
+        td4.append(volSpan);
+
+        tr.append(td0,td1,td2,td3,td4);
+        tbody.append(tr);
+
+        // listeners (atualiza volume, salva e atualiza rodapé+gráficos)
+        function persist(){ saveDay(currentUserId, weekIdx, dayIdx, data); }
+        function updateCell(){ volSpan.textContent = formatNum(vol(o)); }
+
+        name.addEventListener('input', ()=>{ o.nome=name.value;        persist(); footer.update(); updateCharts(); });
+        sets.addEventListener('input', ()=>{ o.sets=+sets.value;       updateCell(); persist(); footer.update(); updateCharts(); });
+        reps.addEventListener('input', ()=>{ o.reps=+reps.value;       updateCell(); persist(); footer.update(); updateCharts(); });
+        load.addEventListener('input', ()=>{ o.carga=+load.value;      updateCell(); persist(); footer.update(); updateCharts(); });
+      });
+
+      // tfoot discreto
+      const tfoot=el('tfoot'); const trf=el('tr'); const tdf=el('td');
+      tdf.colSpan=5; tdf.style.textAlign='right';
+      tdf.append(el('div',{className:'small',textContent:'Alterações são salvas no Firestore automaticamente.'}));
+      trf.append(tdf); tfoot.append(trf);
+
+      tbl.append(colgroup,thead,tbody,tfoot);
+      container.append(tbl);
+
+      // total + barra
+      const footer = attachSessionFooter(container, weekIdx, dayIdx, data);
+    }
+
+    async function buildWeek(weekIdx){
+      $('#repRange').textContent=weeks[weekIdx-1].reps+(weeks[weekIdx-1].treg?' · TREG':'');
+      await Promise.all([0,1,2,4,5,6].map(async (i)=>{
+        const host=['d1','d2','d3',null,'d4','d5','d6'][i];
+        await buildTable($('#'+host),weekIdx,i);
+      }));
+      $('#dR').classList.toggle('card',true);
+      updateCharts();
+    }
+
+    // ===== Gráficos =====
+    let weeklyChart=null, avgRepsChart=null;
+    function buildChartsIfNeeded(){
+      if(!weeklyChart){
+        const ctxW = document.getElementById('chartWeekly').getContext('2d');
+        weeklyChart = new Chart(ctxW, {
+          type: 'line',
+          data: { labels: weeks.map(w=>'S'+w.id), datasets: [{ label: 'Volume semanal', data: getAllWeeksVolumes() }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+        });
+      }
+      if(!avgRepsChart){
+        const ctxA = document.getElementById('chartAvgReps').getContext('2d');
+        const wkId = Number($('#week').value||1);
+        const rows = getWeekExerciseAvgRepsRows(wkId);
+        setAvgChartHeightByRows(rows.length);
+        avgRepsChart = new Chart(ctxA, {
+          type: 'bar',
+          data: { labels: rows.map(r=>r.nome), datasets: [{ label:'Média de repetições', data: rows.map(r=>Number(r.avgReps.toFixed(2))) }] },
+          options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+        });
+      }
+    }
+    function updateCharts(){
+      buildChartsIfNeeded();
+      weeklyChart.data.datasets[0].data = getAllWeeksVolumes();
+      weeklyChart.update();
+
+      const wkId = Number($('#week').value||1);
+      const rows = getWeekExerciseAvgRepsRows(wkId);
+      setAvgChartHeightByRows(rows.length);
+      avgRepsChart.data.labels = rows.map(r=>r.nome);
+      avgRepsChart.data.datasets[0].data = rows.map(r=>Number(r.avgReps.toFixed(2)));
+      avgRepsChart.update();
+    }
+
+    // ===== Init =====
+    function showTrainingScreen(user) {
+      if (user) {
+        currentUserId = user.uid;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('training-screen').classList.remove('hidden');
+        document.getElementById('ws-label').textContent = user.email || user.uid;
+        attachRealtimeSync(currentUserId);
+        buildWeek(1);
+      }
+    }
+
+    (async function init(){
+      // Lógica de autenticação e navegação para a tela de treino
+      auth.onAuthStateChanged(showTrainingScreen);
+
+      document.getElementById('btn-google-login').addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Erro no login com o Google:", error);
+          alert("Erro no login. Verifique o console.");
+        }
+      });
+
+      document.getElementById('btn-anon-login').addEventListener('click', async () => {
+        try {
+          const userCredential = await signInAnonymously(auth);
+          showTrainingScreen(userCredential.user);
+        } catch (error) {
+          console.error("Erro ao criar novo usuário:", error);
+          alert("Erro ao criar usuário. Tente novamente.");
+        }
+      });
+
+      // UI
+      document.getElementById('week').addEventListener('change',()=>buildWeek(Number(document.getElementById('week').value)));
+
+      // Export / Import
+      document.getElementById('exportBtn').addEventListener('click',()=>{
+        const dump={}; weeks.forEach(w=>{ dump[w.id]={}; activeDayIdx.forEach(i=>{
+          let v=null; try{ v=JSON.parse(localStorage.getItem(key(w.id,i))||'null'); }catch{}
+          dump[w.id][i]=v?.items||[];
+        });});
+        const blob=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob); const a=document.createElement('a');
+        a.href=url; a.download=`treino_${currentUserId}.json`; a.click(); URL.revokeObjectURL(url);
+      });
+      document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
+      document.getElementById('fileInput').addEventListener('change',(ev)=>{
+        const file=ev.target.files[0]; if(!file) return; const reader=new FileReader();
+        reader.onload=async ()=>{
+          try{
+            const data=JSON.parse(String(reader.result));
+            for (const wkId of Object.keys(data)){
+              for (const di of Object.keys(data[wkId]||{})){
+                const items = data[wkId][di]||[];
+                localStorage.setItem(key(Number(wkId),Number(di)), JSON.stringify({items,updatedAt:Date.now()}));
+                await setDoc(dayDocRef(currentUserId, Number(wkId), Number(di)), { items, updatedAt: Date.now() }, { merge: true });
+              }
+            }
+            await buildWeek(Number(document.getElementById('week').value));
+            alert('Importado com sucesso.');
+          }catch(e){ alert('Arquivo inválido.'); }
+        };
+        reader.readAsText(file);
+      });
+    })();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/Treinov5/service-worker.js');
+    }
+  </script>
 </body>
 </html>
